@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema RFID - Industrial</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #11998e;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --border: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        /* LOGIN SCREEN */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-danger {
+            background: white;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .role-btn {
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .role-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .role-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .role-btn .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .role-btn .label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* MAIN APP */
+        .app-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .app-container.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .header-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* MAIN CONTENT */
+        .app-main {
+            flex: 1;
+            padding: 24px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* CARDS */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* GRID LAYOUTS */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+        }
+
+        /* RFID READER */
+        .rfid-reader {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 3px dashed var(--primary);
+            border-radius: 12px;
+            padding: 48px 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            transition: all 0.3s;
+        }
+
+        .rfid-reader.active {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #f0fff4 0%, #d4edda 100%);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .rfid-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .rfid-reader h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .rfid-reader p {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .simulate-btn {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .simulate-btn:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+
+        /* ITEMS LIST */
+        .items-list {
+            background: white;
+            border-radius: 8px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 60px 120px 1fr 100px 40px;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .item-row:hover {
+            background: var(--light);
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-row.new {
+            animation: slideIn 0.5s;
+            background: #e7f3ff;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .item-number {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .item-code {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .item-desc {
+            font-size: 14px;
+        }
+
+        .item-qty {
+            text-align: center;
+            font-weight: 600;
+            background: #e7f3ff;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+
+        .remove-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 64px 24px;
+            color: #6c757d;
+        }
+
+        .empty-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        /* SUMMARY */
+        .summary-box {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-top: 8px;
+        }
+
+        .summary-label {
+            color: #6c757d;
+        }
+
+        .summary-value {
+            font-weight: 600;
+        }
+
+        /* ACTIONS */
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* ALERTS */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            animation: modalIn 0.3s;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .modal-text {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+
+        .tag-preview {
+            background: var(--light);
+            border: 2px dashed var(--primary);
+            padding: 24px;
+            border-radius: 8px;
+            margin: 24px 0;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+        }
+
+        .tag-preview .volume-num {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .tag-preview .barcode {
+            font-size: 28px;
+            margin: 16px 0;
+        }
+
+        .tag-preview .rfid-code {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* COMPARISON TABLE */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 80px;
+            gap: 24px;
+            background: var(--light);
+            padding: 24px;
+            border-radius: 12px;
+        }
+
+        .column {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .column-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .expected-header {
+            color: #6c757d;
+        }
+
+        .scanned-header {
+            color: var(--secondary);
+        }
+
+        .volume-item {
+            padding: 16px;
+            margin-bottom: 12px;
+            background: var(--light);
+            border-radius: 8px;
+            border-left: 4px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .volume-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .volume-item.matched {
+            border-left-color: var(--success);
+            background: #f0fff4;
+        }
+
+        .volume-item.missing {
+            border-left-color: var(--danger);
+            background: #fff5f5;
+        }
+
+        .volume-code {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .volume-details {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .volume-qty {
+            display: inline-block;
+            background: #e7f3ff;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .status-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-top: 48px;
+        }
+
+        .status-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto;
+        }
+
+        .status-ok {
+            background: #d4edda;
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: var(--warning);
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: var(--danger);
+        }
+
+        /* SUMMARY CARDS */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .stat-card.success {
+            border-color: var(--success);
+        }
+
+        .stat-card.success .stat-value {
+            color: var(--success);
+        }
+
+        .stat-card.danger {
+            border-color: var(--danger);
+        }
+
+        .stat-card.danger .stat-value {
+            color: var(--danger);
+        }
+
+        .stat-card.warning {
+            border-color: var(--warning);
+        }
+
+        .stat-card.warning .stat-value {
+            color: var(--warning);
+        }
+
+        /* PROGRESS BAR */
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.5s ease;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-column {
+                flex-direction: row;
+                padding-top: 0;
+            }
+
+            .header-info {
+                grid-template-columns: 1fr;
+            }
+
+            .item-row {
+                grid-template-columns: 40px 1fr 80px 30px;
+                font-size: 12px;
+            }
+
+            .item-code {
+                display: none;
+            }
+        }
+
+        /* LOADING SPINNER */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>🏭 Sistema RFID</h1>
+                <p>Embalagem e Conferência Industrial</p>
+            </div>
+
+            <div class="role-selector">
+                <div class="role-btn active" data-role="packer">
+                    <div class="icon">📦</div>
+                    <div class="label">Embalagem</div>
+                </div>
+                <div class="role-btn" data-role="checker">
+                    <div class="icon">✅</div>
+                    <div class="label">Conferência</div>
+                </div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" class="form-control" placeholder="Digite seu usuário" value="operador">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-control" placeholder="Digite sua senha" value="1234">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Entrar
+                </button>
+            </form>
+            <p style="text-align: center; margin-top: 16px; font-size: 12px; color: #6c757d;">
+                Usuário: <strong>operador</strong> | Senha: <strong>1234</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- PACKING APP -->
+    <div id="packingApp" class="app-container">
+        <header class="app-header">
+            <div class="header-top">
+                <div class="header-title">
+                    <span style="font-size: 32px;">📦</span>
+                    <h1>Embalagem e Emissão</h1>
+                </div>
+                <div class="header-user">
+                    <div class="user-info">
+                        <div class="user-name" id="packingUserName">João Silva</div>
+                        <div class="user-role">Operador de Embalagem</div>
+                    </div>
+                    <button class="logout-btn" id="packingLogoutBtn">Sair</button>
+                </div>
+            </div>
+            <div class="header-info">
+                <div class="info-card">
+                    <div class="info-label">Pedido</div>
+                    <div class="info-value" id="packingOrderNumber">#PED-45823</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Cliente</div>
+                    <div class="info-value">Indústria ABC Ltda</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Data</div>
+                    <div class="info-value" id="packingDate">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Volume Atual</div>
+                    <div class="info-value" id="packingVolumeNum">#001</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <div class="two-column">
+                <div>
+                    <div class="card">
+                        <div class="card-header">📡 Leitor RFID</div>
+                        <div id="packingRfidReader" class="rfid-reader">
+                            <div class="rfid-icon">📻</div>
+                            <h3>Aguardando Leitura...</h3>
+                            <p>Aproxime o produto do leitor RFID</p>
+                            <button class="simulate-btn" id="simulatePackingBtn">
+                                🔄 Simular Leitura RFID
+                            </button>
+                        </div>
+
+                        <div id="packingAlerts"></div>
+
+                        <div class="card-header" style="margin-top: 24px;">📋 Itens do Volume Atual</div>
+                        <div class="items-list" id="packingItemsList">
+                            <div class="empty-state">
+                                <div class="empty-icon">📭</div>
+                                <p>Nenhum item adicionado ainda</p>
+                                <p style="font-size: 14px; margin-top: 8px;">Use o leitor RFID para adicionar produtos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">📊 Resumo do Volume</div>
+                        <div class="summary-box">
+                            <div class="summary-row">
+                                <span class="summary-label">Volume Nº</span>
+                                <span class="summary-value" id="summaryVolumeNum">001</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Itens Únicos</span>
+                                <span class="summary-value" id="summaryUniqueItems">0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Quantidade Total</span>
+                                <span class="summary-value" id="summaryTotalQty">0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">TOTAL</span>
+                                <span class="summary-value" id="summaryTotal">0 itens</span>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button class="btn btn-success" id="finishVolumeBtn" disabled>
+                                🏷️ Finalizar e Emitir Etiqueta
+                            </button>
+                            <button class="btn btn-secondary" id="newVolumeBtn">
+                                ➕ Novo Volume
+                            </button>
+                            <button class="btn btn-danger" id="cancelVolumeBtn">
+                                ❌ Cancelar Volume
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- CHECKING APP -->
+    <div id="checkingApp" class="app-container">
+        <header class="app-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="header-top">
+                <div class="header-title">
+                    <span style="font-size: 32px;">✅</span>
+                    <h1>Conferência de Pedido</h1>
+                </div>
+                <div class="header-user">
+                    <div class="user-info">
+                        <div class="user-name" id="checkingUserName">Maria Santos</div>
+                        <div class="user-role">Conferente</div>
+                    </div>
+                    <button class="logout-btn" id="checkingLogoutBtn">Sair</button>
+                </div>
+            </div>
+            <div class="header-info">
+                <div class="info-card">
+                    <div class="info-label">Pedido</div>
+                    <div class="info-value" id="checkingOrderNumber">#PED-45823</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Cliente</div>
+                    <div class="info-value">Indústria ABC Ltda</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Conferente</div>
+                    <div class="info-value" id="checkingConferenteName">Maria Santos</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Data/Hora</div>
+                    <div class="info-value" id="checkingDate">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Status</div>
+                    <div class="info-value">
+                        <span id="checkingStatus" style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 14px;">
+                            Em Conferência
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 32px;">
+                <div id="checkingRfidScanner" class="rfid-reader" style="border-color: white; background: rgba(255,255,255,0.1);">
+                    <div class="rfid-icon">📡</div>
+                    <div style="color: white;">
+                        <h3 style="color: white;">Leitor RFID Ativo</h3>
+                        <p style="color: rgba(255,255,255,0.9);">Aproxime os volumes para conferência automática</p>
+                        <button class="simulate-btn" id="simulateCheckingBtn">
+                            🔄 Simular Leitura de Volume
+                        </button>
+                    </div>
+                    <div class="progress-bar" style="background: rgba(255,255,255,0.2);">
+                        <div class="progress-fill" id="checkingProgress" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="checkingAlerts"></div>
+
+            <div class="summary-cards">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-value" id="expectedVolumes">5</div>
+                    <div class="stat-label">Volumes Esperados</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="scannedVolumes">0</div>
+                    <div class="stat-label">Volumes Conferidos</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-value" id="missingVolumes">5</div>
+                    <div class="stat-label">Volumes Faltantes</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">❌</div>
+                    <div class="stat-value" id="divergences">0</div>
+                    <div class="stat-label">Divergências</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">📊 Comparação de Volumes</div>
+                <div class="comparison-grid">
+                    <div class="column">
+                        <div class="column-header expected-header">
+                            📋 Esperado (5 volumes)
+                        </div>
+                        <div id="expectedList"></div>
+                    </div>
+
+                    <div class="column">
+                        <div class="column-header scanned-header">
+                            📡 Conferido (<span id="scannedCount">0</span> volumes)
+                        </div>
+                        <div id="scannedList">
+                            <div class="empty-state" style="padding: 32px 16px;">
+                                <div class="empty-icon">📭</div>
+                                <p>Nenhum volume conferido ainda</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-column" id="statusColumn"></div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 24px;">
+                <button class="btn btn-secondary" id="resetConferenceBtn">
+                    🔄 Reiniciar Conferência
+                </button>
+                <button class="btn btn-danger" id="reportBtn" style="display: none;">
+                    ⚠️ Reportar Divergência
+                </button>
+                <button class="btn btn-success" id="sendBtn" disabled>
+                    🚀 Enviar para Faturamento
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Tag Emission Modal -->
+    <div id="tagModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">✅</div>
+                <h2 class="modal-title">Etiqueta RFID Emitida!</h2>
+                <p class="modal-text">O volume foi finalizado e a etiqueta RFID foi gerada com sucesso.</p>
+            </div>
+
+            <div class="tag-preview">
+                <div class="volume-num">VOLUME #<span id="tagVolumeNum"></span></div>
+                <div>Pedido: <span id="tagOrderNum"></span></div>
+                <div>Itens: <span id="tagItems"></span></div>
+                <div>Data: <span id="tagDate"></span></div>
+                <div class="barcode">||||| |||| |||||</div>
+                <div class="rfid-code">RFID: <span id="tagRFID"></span></div>
+            </div>
+
+            <button class="btn btn-primary" id="closeTagModalBtn">OK, Continuar</button>
+        </div>
+    </div>
+
+    <!-- Focco Success Modal -->
+    <div id="foccoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-icon">🎉</div>
+                <h2 class="modal-title">Enviado com Sucesso!</h2>
+                <p class="modal-text">Os dados foram enviados para o Focco via API</p>
+            </div>
+
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span class="summary-label">Pedido</span>
+                    <span class="summary-value" id="foccoOrderNum"></span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Volumes Conferidos</span>
+                    <span class="summary-value" id="foccoVolumes"></span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Status da Integração</span>
+                    <span class="summary-value" style="color: var(--success);">✅ Sucesso</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Timestamp</span>
+                    <span class="summary-value" id="foccoTimestamp"></span>
+                </div>
+            </div>
+
+            <div class="alert alert-success">
+                ✅ Pedido liberado para faturamento no sistema Focco
+            </div>
+
+            <button class="btn btn-success" id="closeFoccoModalBtn">OK, Finalizar</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // Wait for DOM to be ready
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing app...');
+            
+            // ==========================================
+            // STATE MANAGEMENT
+            // ==========================================
+            const state = {
+            user: null,
+            role: 'packer',
+            packing: {
+                items: [],
+                volumeNumber: 1,
+                itemCounter: 0
+            },
+            checking: {
+                expectedVolumes: [],
+                scannedVolumes: [],
+                currentIndex: 0
+            }
+        };
+
+        // Mock data
+        const PRODUCTS = [
+            { code: 'PROD-1001', name: 'Parafuso M8 x 50mm Aço Inox', qty: 100 },
+            { code: 'PROD-1002', name: 'Arruela Lisa M8 Zincada', qty: 200 },
+            { code: 'PROD-1003', name: 'Porca Sextavada M8', qty: 150 },
+            { code: 'PROD-1004', name: 'Rebite 4mm Alumínio', qty: 500 },
+            { code: 'PROD-1005', name: 'Chapa Metálica 1000x500x2mm', qty: 10 }
+        ];
+
+        const EXPECTED_VOLUMES = [
+            { id: 1, rfid: 'RFID84523001', num: '001', items: 3, qty: 450 },
+            { id: 2, rfid: 'RFID84523002', num: '002', items: 2, qty: 300 },
+            { id: 3, rfid: 'RFID84523003', num: '003', items: 4, qty: 760 },
+            { id: 4, rfid: 'RFID84523004', num: '004', items: 2, qty: 210 },
+            { id: 5, rfid: 'RFID84523005', num: '005', items: 1, qty: 10 }
+        ];
+
+        // ==========================================
+        // LOGIN
+        // ==========================================
+        console.log('Setting up role buttons...');
+        document.querySelectorAll('.role-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                console.log('Role button clicked:', this.dataset.role);
+                document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                state.role = this.dataset.role;
+            });
+        });
+
+        console.log('Setting up login form...');
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Form submitted!');
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            console.log('Username:', username, 'Password:', password ? '***' : 'empty');
+            
+            // Simple validation - accept any credentials for demo
+            if (!username || !password) {
+                alert('Por favor, preencha usuário e senha');
+                return;
+            }
+            
+            state.user = {
+                username: username,
+                fullName: username.includes('joao') || username.includes('joão') ? 'João Silva' : 
+                         username.includes('maria') ? 'Maria Santos' : 
+                         username.charAt(0).toUpperCase() + username.slice(1),
+                role: state.role
+            };
+
+            console.log('User state:', state.user);
+            console.log('Calling login()...');
+            login();
+        });
+
+        // ==========================================
+        // EVENT LISTENERS - PACKING
+        // ==========================================
+        console.log('Setting up packing event listeners...');
+        
+        document.getElementById('simulatePackingBtn').addEventListener('click', simulatePackingRFID);
+        document.getElementById('finishVolumeBtn').addEventListener('click', finishVolume);
+        document.getElementById('newVolumeBtn').addEventListener('click', newVolume);
+        document.getElementById('cancelVolumeBtn').addEventListener('click', cancelVolume);
+        document.getElementById('packingLogoutBtn').addEventListener('click', logout);
+        document.getElementById('closeTagModalBtn').addEventListener('click', closeTagModal);
+
+        // ==========================================
+        // EVENT LISTENERS - CHECKING
+        // ==========================================
+        console.log('Setting up checking event listeners...');
+        
+        document.getElementById('simulateCheckingBtn').addEventListener('click', simulateCheckingRFID);
+        document.getElementById('resetConferenceBtn').addEventListener('click', resetConference);
+        document.getElementById('sendBtn').addEventListener('click', sendToFocco);
+        document.getElementById('checkingLogoutBtn').addEventListener('click', logout);
+        document.getElementById('closeFoccoModalBtn').addEventListener('click', closeFoccoModal);
+
+        function login() {
+            console.log('login() function called');
+            console.log('Hiding login screen...');
+            document.getElementById('loginScreen').style.display = 'none';
+            
+            console.log('User role:', state.role);
+            
+            if (state.role === 'packer') {
+                console.log('Loading packing app...');
+                document.getElementById('packingApp').classList.add('active');
+                document.getElementById('packingUserName').textContent = state.user.fullName;
+                updatePackingDate();
+                console.log('Packing app loaded!');
+            } else {
+                console.log('Loading checking app...');
+                document.getElementById('checkingApp').classList.add('active');
+                document.getElementById('checkingUserName').textContent = state.user.fullName;
+                document.getElementById('checkingConferenteName').textContent = state.user.fullName;
+                updateCheckingDate();
+                initializeChecking();
+                console.log('Checking app loaded!');
+            }
+        }
+
+        function logout() {
+            state.user = null;
+            state.packing.items = [];
+            state.checking.scannedVolumes = [];
+            state.checking.currentIndex = 0;
+            
+            document.getElementById('packingApp').classList.remove('active');
+            document.getElementById('checkingApp').classList.remove('active');
+            document.getElementById('loginScreen').style.display = 'flex';
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function updatePackingDate() {
+            const now = new Date();
+            document.getElementById('packingDate').textContent = 
+                now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+        }
+
+        function updateCheckingDate() {
+            const now = new Date();
+            document.getElementById('checkingDate').textContent = 
+                now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+        }
+
+        // ==========================================
+        // PACKING FUNCTIONS
+        // ==========================================
+        function simulatePackingRFID() {
+            const reader = document.getElementById('packingRfidReader');
+            reader.classList.add('active');
+            playSound('beep');
+
+            setTimeout(() => {
+                reader.classList.remove('active');
+                const product = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
+                addItemToPacking(product);
+            }, 500);
+        }
+
+        function addItemToPacking(product) {
+            // Check for duplicates
+            const existing = state.packing.items.find(item => item.code === product.code);
+            if (existing) {
+                showAlert('packingAlerts', '⚠️ Item já adicionado ao volume!', 'warning');
+                playSound('error');
+                return;
+            }
+
+            state.packing.itemCounter++;
+            state.packing.items.push({
+                ...product,
+                id: state.packing.itemCounter
+            });
+
+            showAlert('packingAlerts', '✅ Item adicionado com sucesso!', 'success');
+            playSound('success');
+            renderPackingItems();
+            updatePackingSummary();
+        }
+
+        function renderPackingItems() {
+            const container = document.getElementById('packingItemsList');
+
+            if (state.packing.items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p>Nenhum item adicionado ainda</p>
+                        <p style="font-size: 14px; margin-top: 8px;">Use o leitor RFID para adicionar produtos</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = state.packing.items.map((item, index) => `
+                <div class="item-row ${index === state.packing.items.length - 1 ? 'new' : ''}">
+                    <div class="item-number">#${index + 1}</div>
+                    <div class="item-code">${item.code}</div>
+                    <div class="item-desc">${item.name}</div>
+                    <div class="item-qty">${item.qty} un</div>
+                    <button class="remove-btn" data-item-id="${item.id}">✕</button>
+                </div>
+            `).join('');
+
+            // Add event listeners to remove buttons
+            container.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = parseInt(this.dataset.itemId);
+                    removeItem(itemId);
+                });
+            });
+        }
+
+        function removeItem(id) {
+            state.packing.items = state.packing.items.filter(item => item.id !== id);
+            renderPackingItems();
+            updatePackingSummary();
+            showAlert('packingAlerts', '🗑️ Item removido do volume', 'warning');
+        }
+
+        function updatePackingSummary() {
+            const uniqueItems = state.packing.items.length;
+            const totalQty = state.packing.items.reduce((sum, item) => sum + item.qty, 0);
+
+            document.getElementById('summaryVolumeNum').textContent = 
+                state.packing.volumeNumber.toString().padStart(3, '0');
+            document.getElementById('summaryUniqueItems').textContent = uniqueItems;
+            document.getElementById('summaryTotalQty').textContent = totalQty;
+            document.getElementById('summaryTotal').textContent = `${uniqueItems} itens`;
+
+            document.getElementById('finishVolumeBtn').disabled = state.packing.items.length === 0;
+        }
+
+        function finishVolume() {
+            if (state.packing.items.length === 0) return;
+
+            const rfidCode = 'RFID' + Date.now().toString().slice(-8);
+            const volumeNum = state.packing.volumeNumber.toString().padStart(3, '0');
+
+            document.getElementById('tagVolumeNum').textContent = volumeNum;
+            document.getElementById('tagOrderNum').textContent = 'PED-45823';
+            document.getElementById('tagItems').textContent = state.packing.items.length;
+            document.getElementById('tagDate').textContent = new Date().toLocaleString('pt-BR');
+            document.getElementById('tagRFID').textContent = rfidCode;
+
+            document.getElementById('tagModal').classList.add('active');
+            playSound('success');
+
+            state.packing.volumeNumber++;
+        }
+
+        function closeTagModal() {
+            document.getElementById('tagModal').classList.remove('active');
+            newVolume();
+        }
+
+        function newVolume() {
+            state.packing.items = [];
+            state.packing.itemCounter = 0;
+            document.getElementById('packingVolumeNum').textContent = 
+                '#' + state.packing.volumeNumber.toString().padStart(3, '0');
+            renderPackingItems();
+            updatePackingSummary();
+            showAlert('packingAlerts', '📦 Novo volume iniciado', 'info');
+        }
+
+        function cancelVolume() {
+            if (state.packing.items.length > 0 && 
+                !confirm('Deseja realmente cancelar este volume? Todos os itens serão perdidos.')) {
+                return;
+            }
+            newVolume();
+        }
+
+        // ==========================================
+        // CHECKING FUNCTIONS
+        // ==========================================
+        function initializeChecking() {
+            state.checking.expectedVolumes = [...EXPECTED_VOLUMES];
+            state.checking.scannedVolumes = [];
+            state.checking.currentIndex = 0;
+
+            renderExpectedVolumes();
+            renderScannedVolumes();
+            renderStatusIcons();
+            updateCheckingSummary();
+        }
+
+        function simulateCheckingRFID() {
+            if (state.checking.currentIndex >= state.checking.expectedVolumes.length) {
+                showAlert('checkingAlerts', '⚠️ Todos os volumes já foram conferidos!', 'warning');
+                return;
+            }
+
+            const scanner = document.getElementById('checkingRfidScanner');
+            scanner.classList.add('active');
+
+            setTimeout(() => {
+                scanner.classList.remove('active');
+                const volume = state.checking.expectedVolumes[state.checking.currentIndex];
+                state.checking.scannedVolumes.push(volume);
+                state.checking.currentIndex++;
+
+                showAlert('checkingAlerts', 
+                    `✅ Volume #${volume.num} conferido - RFID: ${volume.rfid}`, 
+                    'success');
+
+                renderExpectedVolumes();
+                renderScannedVolumes();
+                renderStatusIcons();
+                updateCheckingSummary();
+            }, 800);
+        }
+
+        function renderExpectedVolumes() {
+            const container = document.getElementById('expectedList');
+            container.innerHTML = state.checking.expectedVolumes.map(vol => {
+                const isScanned = state.checking.scannedVolumes.find(s => s.id === vol.id);
+                return `
+                    <div class="volume-item ${isScanned ? 'matched' : 'missing'}">
+                        <div class="volume-code">🏷️ ${vol.rfid}</div>
+                        <div class="volume-details">Volume #${vol.num} • ${vol.items} itens</div>
+                        <div class="volume-qty">${vol.qty} un</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderScannedVolumes() {
+            const container = document.getElementById('scannedList');
+
+            if (state.checking.scannedVolumes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 32px 16px;">
+                        <div class="empty-icon">📭</div>
+                        <p>Nenhum volume conferido ainda</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = state.checking.scannedVolumes.map((vol, index) => `
+                <div class="volume-item matched ${index === state.checking.scannedVolumes.length - 1 ? 'new' : ''}">
+                    <div class="volume-code">🏷️ ${vol.rfid}</div>
+                    <div class="volume-details">Volume #${vol.num} • ${vol.items} itens</div>
+                    <div class="volume-qty">${vol.qty} un</div>
+                </div>
+            `).join('');
+
+            document.getElementById('scannedCount').textContent = state.checking.scannedVolumes.length;
+        }
+
+        function renderStatusIcons() {
+            const container = document.getElementById('statusColumn');
+            const total = state.checking.expectedVolumes.length;
+            const icons = [];
+
+            for (let i = 0; i < total; i++) {
+                if (i < state.checking.scannedVolumes.length) {
+                    icons.push('<div class="status-icon status-ok">✓</div>');
+                } else {
+                    icons.push('<div class="status-icon status-pending">⏳</div>');
+                }
+            }
+
+            container.innerHTML = icons.join('');
+        }
+
+        function updateCheckingSummary() {
+            const total = state.checking.expectedVolumes.length;
+            const scanned = state.checking.scannedVolumes.length;
+            const missing = total - scanned;
+            const progress = (scanned / total) * 100;
+
+            document.getElementById('scannedVolumes').textContent = scanned;
+            document.getElementById('missingVolumes').textContent = missing;
+            document.getElementById('checkingProgress').style.width = progress + '%';
+
+            document.getElementById('sendBtn').disabled = scanned !== total;
+
+            if (scanned === total) {
+                document.getElementById('checkingStatus').textContent = '✅ Conferência Completa';
+                document.getElementById('checkingStatus').style.background = 'rgba(40, 167, 69, 0.2)';
+                showAlert('checkingAlerts', '🎉 Todos os volumes foram conferidos com sucesso!', 'success');
+            }
+        }
+
+        function resetConference() {
+            if (state.checking.scannedVolumes.length > 0 && 
+                !confirm('Deseja realmente reiniciar a conferência? Todos os dados serão perdidos.')) {
+                return;
+            }
+
+            state.checking.scannedVolumes = [];
+            state.checking.currentIndex = 0;
+
+            renderExpectedVolumes();
+            renderScannedVolumes();
+            renderStatusIcons();
+            updateCheckingSummary();
+
+            document.getElementById('checkingStatus').textContent = 'Em Conferência';
+            document.getElementById('checkingStatus').style.background = 'rgba(255,255,255,0.2)';
+
+            showAlert('checkingAlerts', '🔄 Conferência reiniciada', 'info');
+        }
+
+        function sendToFocco() {
+            if (state.checking.scannedVolumes.length !== state.checking.expectedVolumes.length) {
+                showAlert('checkingAlerts', '❌ Não é possível enviar: conferência incompleta', 'error');
+                return;
+            }
+
+            // Simulate API call
+            showAlert('checkingAlerts', '⏳ Enviando dados para o Focco...', 'info');
+
+            setTimeout(() => {
+                document.getElementById('foccoOrderNum').textContent = 'PED-45823';
+                document.getElementById('foccoVolumes').textContent = state.checking.scannedVolumes.length;
+                document.getElementById('foccoTimestamp').textContent = new Date().toLocaleString('pt-BR');
+
+                document.getElementById('foccoModal').classList.add('active');
+                playSound('success');
+            }, 2000);
+        }
+
+        function closeFoccoModal() {
+            document.getElementById('foccoModal').classList.remove('active');
+            resetConference();
+        }
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            const alertClass = `alert-${type}`;
+
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertClass}`;
+            alert.textContent = message;
+
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.3s';
+                setTimeout(() => alert.remove(), 300);
+            }, 3000);
+        }
+
+        function playSound(type) {
+            // In a real implementation, this would play actual sounds
+            console.log(`🔊 Sound: ${type}`);
+        }
+
+        // Initialize dates on load
+        setInterval(() => {
+            if (document.getElementById('packingApp').classList.contains('active')) {
+                updatePackingDate();
+            }
+            if (document.getElementById('checkingApp').classList.contains('active')) {
+                updateCheckingDate();
+            }
+        }, 1000);
+        
+        console.log('App initialized successfully!');
+        }); // End of DOMContentLoaded
+    </script>
+</body>
+</html>
